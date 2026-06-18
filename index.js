@@ -17,36 +17,35 @@ const client = new YouCanClient(ACCESS_TOKEN);
 function createServer() {
   const server = new McpServer({ name: "youcan-mcp", version: "1.0.0" });
 
+  // ── Products ──────────────────────────────────────────────────────────────
   server.tool("list_products", "List all products in your YouCan store",
-    { page: z.number().optional(), limit: z.number().optional(), search: z.string().optional() },
-    async ({ page = 1, limit = 20, search }) => {
-      const params = { page, limit };
-      if (search) params.search = search;
-      const data = await client.get("/store/products", params);
+    { page: z.number().optional(), limit: z.number().optional() },
+    async ({ page = 1, limit = 20 }) => {
+      const data = await client.get("/products", { page, limit });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
-  server.tool("get_product", "Get details of a specific product",
+  server.tool("get_product", "Get details of a specific product by ID",
     { product_id: z.string() },
     async ({ product_id }) => {
-      const data = await client.get(`/store/products/${product_id}`);
+      const data = await client.get(`/products/${product_id}`);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
-  server.tool("create_product", "Create a new product",
-    { name: z.string(), price: z.number(), description: z.string().optional(), quantity: z.number().optional(), status: z.enum(["active","inactive"]).optional() },
+  server.tool("create_product", "Create a new product in your YouCan store",
+    { name: z.string(), price: z.number(), description: z.string().optional(), quantity: z.number().optional() },
     async (body) => {
-      const data = await client.post("/store/products", body);
+      const data = await client.post("/products", body);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
   server.tool("update_product", "Update an existing product",
-    { product_id: z.string(), name: z.string().optional(), price: z.number().optional(), description: z.string().optional(), quantity: z.number().optional(), status: z.enum(["active","inactive"]).optional() },
+    { product_id: z.string(), name: z.string().optional(), price: z.number().optional(), description: z.string().optional(), quantity: z.number().optional() },
     async ({ product_id, ...body }) => {
-      const data = await client.put(`/store/products/${product_id}`, body);
+      const data = await client.put(`/products/${product_id}`, body);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -54,43 +53,49 @@ function createServer() {
   server.tool("delete_product", "Delete a product",
     { product_id: z.string() },
     async ({ product_id }) => {
-      const data = await client.delete(`/store/products/${product_id}`);
+      const data = await client.delete(`/products/${product_id}`);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
-  server.tool("list_orders", "List all orders",
-    { page: z.number().optional(), limit: z.number().optional(), status: z.string().optional() },
-    async ({ page = 1, limit = 20, status }) => {
-      const params = { page, limit };
-      if (status) params.status = status;
-      const data = await client.get("/store/orders", params);
+  // ── Orders ────────────────────────────────────────────────────────────────
+  server.tool("list_orders", "List all orders in your YouCan store",
+    { page: z.number().optional(), limit: z.number().optional() },
+    async ({ page = 1, limit = 20 }) => {
+      const data = await client.get("/orders", { page, limit });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
-  server.tool("get_order", "Get details of a specific order",
+  server.tool("get_order", "Get details of a specific order by ID",
     { order_id: z.string() },
     async ({ order_id }) => {
-      const data = await client.get(`/store/orders/${order_id}`);
+      const data = await client.get(`/orders/${order_id}`);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
-  server.tool("update_order_status", "Update order status",
-    { order_id: z.string(), status: z.string() },
+  server.tool("update_order_status", "Update the status of an order",
+    { order_id: z.string(), status: z.number().describe("Status code: 1=pending, 2=processing, 3=shipped, 4=delivered, 5=canceled") },
     async ({ order_id, status }) => {
-      const data = await client.put(`/store/orders/${order_id}/status`, { status });
+      const data = await client.put(`/orders/${order_id}/statuses`, { status });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
-  server.tool("list_customers", "List all customers",
-    { page: z.number().optional(), limit: z.number().optional(), search: z.string().optional() },
-    async ({ page = 1, limit = 20, search }) => {
-      const params = { page, limit };
-      if (search) params.search = search;
-      const data = await client.get("/store/customers", params);
+  server.tool("fulfill_order", "Mark an order as fulfilled/shipped",
+    { order_id: z.string(), tracking_number: z.string().optional() },
+    async ({ order_id, ...body }) => {
+      const data = await client.post(`/orders/${order_id}/fulfill`, body);
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  // ── Customers ─────────────────────────────────────────────────────────────
+  server.tool("list_customers", "List all customers in your YouCan store",
+    { page: z.number().optional(), limit: z.number().optional() },
+    async ({ page = 1, limit = 20 }) => {
+      const data = await client.get("/customers", { page, limit });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -98,7 +103,7 @@ function createServer() {
   server.tool("get_customer", "Get details of a specific customer",
     { customer_id: z.string() },
     async ({ customer_id }) => {
-      const data = await client.get(`/store/customers/${customer_id}`);
+      const data = await client.get(`/customers/${customer_id}`);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -106,23 +111,24 @@ function createServer() {
   server.tool("create_customer", "Create a new customer",
     { first_name: z.string(), last_name: z.string(), email: z.string().email(), phone: z.string().optional() },
     async (body) => {
-      const data = await client.post("/store/customers", body);
+      const data = await client.post("/customers", body);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
+  // ── Coupons ───────────────────────────────────────────────────────────────
   server.tool("list_coupons", "List all coupons",
     { page: z.number().optional(), limit: z.number().optional() },
     async ({ page = 1, limit = 20 }) => {
-      const data = await client.get("/store/coupons", { page, limit });
+      const data = await client.get("/coupons", { page, limit });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
-  server.tool("create_coupon", "Create a new discount coupon",
-    { code: z.string(), discount_type: z.enum(["percentage","fixed"]), discount_value: z.number(), expires_at: z.string().optional(), usage_limit: z.number().optional() },
+  server.tool("create_coupon", "Create a discount coupon",
+    { code: z.string(), discount_type: z.enum(["percentage", "fixed"]), discount_value: z.number(), expires_at: z.string().optional() },
     async (body) => {
-      const data = await client.post("/store/coupons", body);
+      const data = await client.post("/coupons", body);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -130,12 +136,13 @@ function createServer() {
   server.tool("delete_coupon", "Delete a coupon",
     { coupon_id: z.string() },
     async ({ coupon_id }) => {
-      const data = await client.delete(`/store/coupons/${coupon_id}`);
+      const data = await client.delete(`/coupons/${coupon_id}`);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
-  server.tool("get_store_details", "Get general store information",
+  // ── Store ─────────────────────────────────────────────────────────────────
+  server.tool("get_store_details", "Get general information about your YouCan store",
     {},
     async () => {
       const data = await client.get("/store");
@@ -143,7 +150,7 @@ function createServer() {
     }
   );
 
-  server.tool("get_store_profits", "Get store profit and revenue summary",
+  server.tool("get_store_profits", "Get profit and revenue summary",
     { start_date: z.string().optional(), end_date: z.string().optional() },
     async (params) => {
       const data = await client.get("/store/profits", params);
@@ -151,26 +158,29 @@ function createServer() {
     }
   );
 
+  // ── Categories ────────────────────────────────────────────────────────────
   server.tool("list_categories", "List all product categories",
     { page: z.number().optional(), limit: z.number().optional() },
     async ({ page = 1, limit = 50 }) => {
-      const data = await client.get("/store/categories", { page, limit });
+      const data = await client.get("/categories", { page, limit });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
+  // ── Shipping ──────────────────────────────────────────────────────────────
   server.tool("list_shipping_zones", "List all shipping zones",
     {},
     async () => {
-      const data = await client.get("/store/shipping-zones");
+      const data = await client.get("/shipping-zones");
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
 
+  // ── Inventory ─────────────────────────────────────────────────────────────
   server.tool("increment_inventory", "Increase stock quantity of a product",
     { product_id: z.string(), quantity: z.number() },
     async ({ product_id, quantity }) => {
-      const data = await client.post(`/store/products/${product_id}/inventory/increment`, { quantity });
+      const data = await client.post(`/products/${product_id}/inventory/increment`, { quantity });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
@@ -178,7 +188,7 @@ function createServer() {
   server.tool("decrement_inventory", "Decrease stock quantity of a product",
     { product_id: z.string(), quantity: z.number() },
     async ({ product_id, quantity }) => {
-      const data = await client.post(`/store/products/${product_id}/inventory/decrement`, { quantity });
+      const data = await client.post(`/products/${product_id}/inventory/decrement`, { quantity });
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
