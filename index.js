@@ -43,10 +43,13 @@ function createServer() {
   );
 
   server.tool("update_product", "Update an existing product",
-    { product_id: z.string(), name: z.string().optional(), price: z.number().optional(), description: z.string().optional(), quantity: z.number().optional(), has_variants: z.boolean().default(false), meta_title: z.string().optional(), meta_description: z.string().optional() },
-    async ({ product_id, meta_title, meta_description, ...body }) => {
+    { product_id: z.string(), name: z.string().optional(), price: z.number().optional(), description: z.string().optional(), quantity: z.number().optional(), has_variants: z.boolean().default(false), meta_title: z.string().optional(), meta_description: z.string().optional(), images: z.array(z.string()).optional() },
+    async ({ product_id, meta_title, meta_description, images, ...body }) => {
       if (meta_title !== undefined || meta_description !== undefined) {
         body.meta = { title: meta_title, description: meta_description };
+      }
+      if (images !== undefined) {
+        body.images = images.map((url, i) => ({ name: url, type: 1, order: i + 1 }));
       }
       const data = await client.post(`/products/update/${product_id}`, body);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
