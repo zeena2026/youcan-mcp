@@ -45,7 +45,7 @@ function createServer() {
   server.tool("update_product", "Update an existing product",
     { product_id: z.string(), name: z.string().optional(), price: z.number().optional(), description: z.string().optional(), quantity: z.number().optional() },
     async ({ product_id, ...body }) => {
-      const data = await client.post(`/products/${product_id}`, { _method: "PUT", ...body });
+      const data = await client.post(`/products/update/${product_id}`, body);
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
   );
