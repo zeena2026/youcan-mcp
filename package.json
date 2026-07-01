@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "MCP server for YouCan Store API — connect your YouCan store to Claude",
   "type": "module",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "start": "node index.js",
+    "dev": "node --watch index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
