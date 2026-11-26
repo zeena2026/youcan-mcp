@@ -1,0 +1,9 @@
+{
+  "0": "YouCanClient",
+  "1": "index.js",
+  "2": "package.json",
+  "3": "dependencies",
+  "4": "scripts",
+  "5": "@modelcontextprotocol/sdk",
+  "6": "engines"
+}
