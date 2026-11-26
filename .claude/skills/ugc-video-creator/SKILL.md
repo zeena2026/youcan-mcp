@@ -1,9 +1,9 @@
 ---
-name: ugc-video
+name: ugc-video-creator
 description: Create realistic AI UGC (user-generated-content style) product videos with Freepik / Magnific for TIRGAZEA or any store product. Use when the user asks for a UGC video, a creator/testimonial video, a "talking to camera" review, a TikTok/Reels-style product ad, or more UGC variations of a product.
 ---
 
-# Realistic UGC product videos (Freepik / Magnific)
+# UGC Video Creator — realistic UGC product videos (Freepik / Magnific)
 
 The user approved this style. Follow it for every UGC video unless the user asks otherwise.
 
